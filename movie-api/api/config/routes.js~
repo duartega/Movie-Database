@@ -1,0 +1,75 @@
+const Authorize = require('../app/Authorize.js');
+
+/*
+|--------------------------------------------------------------------------
+| Default router
+|--------------------------------------------------------------------------
+|
+| Default router is used to define any routes that don't belong to a
+| controller. Also used as a parent container for the other routers.
+|
+*/
+
+// All websites must use this after the port number
+// http://cs.sonoma.edu:8230/api/v1
+const router = require('koa-router')({
+    prefix: '/api/v1'
+});
+
+router.get('/', function (ctx) {
+    return ctx.body = 'What is up?';
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Students router
+|--------------------------------------------------------------------------
+|
+| Description
+|
+*/
+
+const LoginController = new (require('../app/Controllers/LoginController.js'))();
+const loginRouter = require('koa-router')({
+    prefix: '/login'
+});
+loginRouter.get('/:user_id', LoginController.authorizeUser, (err) => console.log("routers.js: loginRouter error:", err));
+
+
+const CourseCatalogController = new (require('../app/Controllers/CourseCatalogController.js'))();
+const courseCatalogRouter = require('koa-router')({
+    prefix: '/course-catalog'
+});
+
+courseCatalogRouter.get('/all-course-descriptions', Authorize('admin'), CourseCatalogController.courseDescriptionsAllCourses, (err) => console.log(err));
+courseCatalogRouter.get('/:subject/course-descriptions', Authorize('admin'), CourseCatalogController.courseDescriptionsForSubject);
+courseCatalogRouter.get('/:subject/:catalog/course-description', Authorize('admin'), CourseCatalogController.courseDescriptionForSubjectAndCatalog);
+
+
+const CourseController = new (require('../app/Controllers/CourseController.js'))();
+const courseRouter = require('koa-router')({
+    prefix: '/courses'
+});
+
+
+// Make some routes so that we can get other info here for instructors for for department
+// essentially change the all-ge-courses to instructors or departments
+// Write a few queries that allow us to get the info from the database and show the information
+// Maybe use some of the ones that we created in workbench
+courseRouter.get('/:term/all-ge-courses', Authorize('admin'), CourseController.allGECoursesForTerm, err => console.log(`allCourses ran into an error: ${err}`)); 
+
+/**
+ * Register all of the controllers into the default controller.
+ */
+router.use(
+    '',
+    courseCatalogRouter.routes(),
+    loginRouter.routes(),
+    courseRouter.routes(),
+);
+
+module.exports = function (app) {
+    app.use(router.routes());
+    app.use(router.allowedMethods());
+};
