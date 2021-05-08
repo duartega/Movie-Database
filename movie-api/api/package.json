@@ -22,7 +22,7 @@
     "koa-compress": "^2.0.0",
     "koa-jwt": "^3.3.2",
     "koa-router": "^7.3.0",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.21",
     "mariasql": "^0.2.6",
     "mysql": "^2.15.0"
   },
